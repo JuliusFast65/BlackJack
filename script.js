@@ -17,7 +17,9 @@ document.getElementById('split-button').addEventListener('click', split);
 
 // Set up player names and initial balances
 function setupNames() {
+    console.log('setupNames function called');
     const numPlayers = parseInt(document.getElementById('num-players').value);
+    console.log(`Number of players: ${numPlayers}`);
     const playerNamesDiv = document.getElementById('player-names');
     playerNamesDiv.innerHTML = '';
     for (let i = 0; i < numPlayers; i++) {
@@ -32,10 +34,12 @@ function setupNames() {
     }
     document.getElementById('setup-players').classList.add('hidden');
     document.getElementById('setup-names').classList.remove('hidden');
+    console.log('Player names setup completed');
 }
 
 // Set up bets for each player
 function setupBets() {
+    console.log('setupBets function called');
     const playerBetsDiv = document.getElementById('player-bets');
     playerBetsDiv.innerHTML = '';
     players = [];
@@ -59,10 +63,12 @@ function setupBets() {
     }
     document.getElementById('setup-names').classList.add('hidden');
     document.getElementById('place-bets').classList.remove('hidden');
+    console.log('Player bets setup completed');
 }
 
 // Start the game by dealing cards and updating UI
 function startGame() {
+    console.log('startGame function called');
     players.forEach(player => {
         const bet = parseInt(document.getElementById(`player-bet-${player.id}`).value);
         if (bet > player.balance) {
@@ -86,6 +92,7 @@ function startGame() {
     dealerHand = [drawCard(), drawCard()];
 
     updateUI();
+    console.log('Game started');
 }
 
 // Create a deck of cards
@@ -107,6 +114,7 @@ function shuffleDeck(deck) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
+    console.log('Deck shuffled');
 }
 
 // Draw a card from the deck
@@ -160,9 +168,8 @@ function getHandValue(hand) {
         } else if (['K', 'Q', 'J'].includes(card.value)) {
             value += 10;
         } else {
-
-// Completar el valor de la mano
-        value += parseInt(card.value);
+            value += parseInt(card.value);
+        }
     }
     while (value > 21 && numAces > 0) {
         value -= 10;
@@ -171,7 +178,7 @@ function getHandValue(hand) {
     return value;
 }
 
-// Cambiar al siguiente jugador o el dealer
+// Move to the next player or the dealer
 function nextPlayer() {
     currentPlayer++;
     if (currentPlayer >= players.length) {
@@ -181,7 +188,7 @@ function nextPlayer() {
     }
 }
 
-// Juega el dealer
+// Dealer's play logic
 function dealerPlay() {
     while (getHandValue(dealerHand) < 17) {
         dealerHand.push(drawCard());
@@ -190,7 +197,7 @@ function dealerPlay() {
     resetGame();
 }
 
-// Determina los ganadores al final del juego
+// Determine winners and update statistics
 function determineWinners() {
     const dealerValue = getHandValue(dealerHand);
     players.forEach(player => {
@@ -214,7 +221,7 @@ function determineWinners() {
     updateStatistics();
 }
 
-// Actualiza la interfaz de usuario
+// Update the user interface
 function updateUI() {
     const playerInfoDiv = document.getElementById('player-info');
     playerInfoDiv.innerHTML = '';
@@ -230,19 +237,19 @@ function updateUI() {
     document.getElementById('dealer-hand').textContent = handToString(dealerHand);
 }
 
-// Convierte una mano a cadena de texto
+// Convert a hand to a string representation
 function handToString(hand) {
     return hand.map(card => `${card.value}${card.suit}`).join(' ');
 }
 
-// Actualiza las estadísticas del juego
+// Update game statistics
 function updateStatistics() {
     document.getElementById('wins').textContent = `Ganadas: ${wins}`;
     document.getElementById('losses').textContent = `Perdidas: ${losses}`;
     document.getElementById('ties').textContent = `Empates: ${ties}`;
 }
 
-// Reinicia el juego para la siguiente ronda
+// Reset the game for the next round
 function resetGame() {
     players.forEach(player => {
         player.hand = [];
@@ -252,9 +259,3 @@ function resetGame() {
     currentPlayer = 0;
     setupBets();
 }
-
-
-
-
-
-                
