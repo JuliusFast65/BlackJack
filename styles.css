@@ -14,6 +14,8 @@ body {
     padding: 20px;
     border-radius: 10px;
     background-color: #34495e;
+    width: 80%;
+    max-width: 800px;
 }
 
 button {
@@ -31,10 +33,10 @@ button:hover {
     background-color: #c0392b;
 }
 
-#player-info, #dealer-info {
-    margin: 20px 0;
+.hidden {
+    display: none;
 }
 
-#statistics {
-    margin-top: 20px;
+#player-info > div {
+    margin: 10px 0;
 }
