@@ -1,29 +1,62 @@
 let deck = [];
-let playerHand = [];
+let players = [];
 let dealerHand = [];
-let playerBet = 0;
-let playerMoney = 1000;
+let currentPlayer = 0;
 let wins = 0;
 let losses = 0;
 let ties = 0;
 
-document.getElementById('bet-button').addEventListener('click', startGame);
+document.getElementById('start-button').addEventListener('click', setupGame);
 document.getElementById('hit-button').addEventListener('click', hit);
 document.getElementById('stand-button').addEventListener('click', stand);
 document.getElementById('double-button').addEventListener('click', doubleBet);
 document.getElementById('split-button').addEventListener('click', split);
 
-function startGame() {
-    playerBet = parseInt(document.getElementById('bet-amount').value);
-    if (playerBet > playerMoney) {
-        alert('No tienes suficiente dinero para esa apuesta.');
-        return;
+function setupGame() {
+    const numPlayers = parseInt(document.getElementById('num-players').value);
+    const initialBalance = parseInt(document.getElementById('initial-balance').value);
+
+    for (let i = 0; i < numPlayers; i++) {
+        players.push({
+            hand: [],
+            balance: initialBalance,
+            bet: 0,
+            id: i
+        });
     }
-    playerMoney -= playerBet;
+
+    document.getElementById('setup').classList.add('hidden');
+    document.getElementById('player-info').classList.remove('hidden');
+    document.getElementById('dealer-info').classList.remove('hidden');
+    document.getElementById('controls').classList.remove('hidden');
+    document.getElementById('statistics').classList.remove('hidden');
+
+    updatePlayerUI();
+    startGame();
+}
+
+function startGame() {
     deck = createDeck();
     shuffleDeck(deck);
-    playerHand = [drawCard(), drawCard()];
+
+    // Collect bets
+    players.forEach(player => {
+        const bet = parseInt(prompt(`Jugador ${player.id + 1}, ingrese su apuesta:`));
+        if (bet > player.balance) {
+            alert('No tienes suficiente dinero para esa apuesta.');
+            startGame();
+            return;
+        }
+        player.bet = bet;
+        player.balance -= bet;
+    });
+
+    // Deal initial cards
+    players.forEach(player => {
+        player.hand = [drawCard(), drawCard()];
+    });
     dealerHand = [drawCard(), drawCard()];
+
     updateUI();
 }
 
@@ -51,44 +84,33 @@ function drawCard() {
 }
 
 function hit() {
-    playerHand.push(drawCard());
-    if (getHandValue(playerHand) > 21) {
-        endGame('Perdiste');
+    players[currentPlayer].hand.push(drawCard());
+    if (getHandValue(players[currentPlayer].hand) > 21) {
+        alert(`Jugador ${currentPlayer + 1}, te pasaste.`);
+        nextPlayer();
     }
     updateUI();
 }
 
 function stand() {
-    while (getHandValue(dealerHand) < 17) {
-        dealerHand.push(drawCard());
-    }
-    const playerValue = getHandValue(playerHand);
-    const dealerValue = getHandValue(dealerHand);
-    if (dealerValue > 21 || playerValue > dealerValue) {
-        endGame('Ganaste');
-    } else if (playerValue < dealerValue) {
-        endGame('Perdiste');
-    } else {
-        endGame('Empate');
-    }
-    updateUI();
+    nextPlayer();
 }
 
 function doubleBet() {
-    if (playerBet * 2 > playerMoney) {
+    const player = players[currentPlayer];
+    if (player.bet * 2 > player.balance) {
         alert('No tienes suficiente dinero para doblar la apuesta.');
         return;
     }
-    playerMoney -= playerBet;
-    playerBet *= 2;
+    player.balance -= player.bet;
+    player.bet *= 2;
     hit();
-    if (getHandValue(playerHand) <= 21) {
-        stand();
+    if (getHandValue(player.hand) <= 21) {
+        nextPlayer();
     }
 }
 
 function split() {
-    // Implementar lógica de dividir mano
     alert('Función de dividir aún no implementada.');
 }
 
@@ -112,30 +134,84 @@ function getHandValue(hand) {
     return value;
 }
 
+function nextPlayer() {
+    currentPlayer++;
+    if (currentPlayer >= players.length) {
+        dealerPlay();
+    } else {
+        updateUI();
+    }
+}
+
+function dealerPlay() {
+    while (getHandValue(dealerHand) < 17) {
+        dealerHand.push(drawCard());
+    }
+    determineWinners();
+    resetGame();
+}
+
+function determineWinners() {
+    const dealerValue = getHandValue(dealerHand);
+    players.forEach(player => {
+        const playerValue = getHandValue(player.hand);
+        if (playerValue > 21) {
+            losses++;
+            alert(`Jugador ${player.id + 1} perdió.`);
+        } else if (dealerValue > 21 || playerValue > dealerValue) {
+            wins++;
+            player.balance += player.bet * 2;
+            alert(`Jugador ${player.id + 1} ganó.`);
+        } else if (playerValue < dealerValue) {
+            losses++;
+            alert(`Jugador ${player.id + 1} perdió.`);
+        } else {
+            ties++;
+            player.balance += player.bet;
+            alert(`Jugador ${player.id + 1} empató.`);
+        }
+    });
+    updateStatistics();
+}
+
+function updatePlayerUI() {
+    const playerInfo = document.getElementById('player-info');
+    playerInfo.innerHTML = '';
+    players.forEach(player => {
+        const playerDiv = document.createElement('div');
+        playerDiv.innerHTML = `
+            <h2>Jugador ${player.id + 1}</h2>
+            <div>Mano: <span id="player-hand-${player.id}"></span></div>
+            <div>Saldo: $<span id="player-balance-${player.id}">${player.balance}</span></div>
+        `;
+        playerInfo.appendChild(playerDiv);
+    });
+}
+
 function updateUI() {
-    document.getElementById('player-hand').innerHTML = handToString(playerHand);
-    document.getElementById('dealer-hand').innerHTML = handToString(dealerHand);
-    document.getElementById('wins').textContent = `Ganadas: ${wins}`;
-    document.getElementById('losses').textContent = `Perdidas: ${losses}`;
-    document.getElementById('ties').textContent = `Empates: ${ties}`;
+    players.forEach(player => {
+        document.getElementById(`player-hand-${player.id}`).textContent = handToString(player.hand);
+        document.getElementById(`player-balance-${player.id}`).textContent = player.balance;
+    });
+    document.getElementById('dealer-hand').textContent = handToString(dealerHand);
 }
 
 function handToString(hand) {
     return hand.map(card => `${card.value}${card.suit}`).join(' ');
 }
 
-function endGame(result) {
-    alert(result);
-    if (result === 'Ganaste') {
-        wins++;
-        playerMoney += playerBet * 2;
-    } else if (result === 'Perdiste') {
-        losses++;
-    } else {
-        ties++;
-        playerMoney += playerBet;
-    }
-    playerHand = [];
+function updateStatistics() {
+    document.getElementById('wins').textContent = `Ganadas: ${wins}`;
+    document.getElementById('losses').textContent = `Perdidas: ${losses}`;
+    document.getElementById('ties').textContent = `Empates: ${ties}`;
+}
+
+function resetGame() {
+    players.forEach(player => {
+        player.hand = [];
+        player.bet = 0;
+    });
     dealerHand = [];
-    updateUI();
+    currentPlayer = 0;
+    startGame();
 }
