@@ -7,17 +7,26 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
+    <div id="setup-players" class="screen">
         <h1>Blackjack</h1>
-        <div id="setup">
-            <label for="num-players">Número de jugadores:</label>
-            <input type="number" id="num-players" min="1" max="4" value="1">
-            <label for="initial-balance">Saldo inicial por jugador:</label>
-            <input type="number" id="initial-balance" min="1" value="100">
-            <button id="start-button">Comenzar Juego</button>
-        </div>
-        <div id="player-info" class="hidden"></div>
-        <div id="dealer-info" class="hidden">
+        <label for="num-players">Número de jugadores:</label>
+        <input type="number" id="num-players" min="1" max="4" value="1">
+        <button id="next-to-names">Siguiente</button>
+    </div>
+    <div id="setup-names" class="screen hidden">
+        <h1>Blackjack</h1>
+        <div id="player-names"></div>
+        <button id="next-to-bets">Siguiente</button>
+    </div>
+    <div id="place-bets" class="screen hidden">
+        <h1>Blackjack</h1>
+        <div id="player-bets"></div>
+        <button id="start-game">Comenzar Juego</button>
+    </div>
+    <div id="game" class="screen hidden">
+        <h1>Blackjack</h1>
+        <div id="player-info"></div>
+        <div id="dealer-info">
             <h2>Dealer</h2>
             <div id="dealer-hand"></div>
         </div>
@@ -27,7 +36,7 @@
             <button id="double-button">Doblar</button>
             <button id="split-button">Dividir</button>
         </div>
-        <div id="statistics" class="hidden">
+        <div id="statistics">
             <h2>Estadísticas</h2>
             <p id="wins">Ganadas: 0</p>
             <p id="losses">Perdidas: 0</p>
